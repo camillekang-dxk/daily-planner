@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>日程 · 每日计划</title>
+  <title>Daily · 每日计划</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
@@ -582,6 +582,10 @@
       display: none;
     }
 
+    .empty-state.hidden {
+      display: none;
+    }
+
     .account-label {
       color: var(--ink-muted);
     }
@@ -647,6 +651,113 @@
       padding: 4px 12px;
       background: var(--bg-secondary);
       border-radius: 20px;
+    }
+
+    /* 本周视图 */
+    .week-view {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--bg-secondary);
+    }
+
+    .week-day {
+      background: var(--bg-paper);
+      border: 1px solid rgba(44, 44, 44, 0.06);
+      border-radius: var(--radius-lg);
+      padding: 16px 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      min-height: 120px;
+    }
+
+    .week-day:hover {
+      box-shadow: var(--shadow-soft);
+      transform: translateY(-2px);
+    }
+
+    .week-day.selected {
+      border-color: var(--accent-vermilion);
+      background: rgba(200, 75, 49, 0.03);
+    }
+
+    .week-day.today .week-day-name {
+      color: var(--accent-vermilion);
+      font-weight: 600;
+    }
+
+    .week-day-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--bg-secondary);
+    }
+
+    .week-day-name {
+      font-size: 12px;
+      color: var(--ink-muted);
+      margin-bottom: 4px;
+      letter-spacing: 0.1em;
+    }
+
+    .week-day-date {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ink-primary);
+    }
+
+    .week-day-todos {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .week-todo-item {
+      font-size: 12px;
+      color: var(--ink-secondary);
+      padding: 4px 8px;
+      background: var(--bg-primary);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .week-todo-item.completed {
+      color: var(--ink-muted);
+      text-decoration: line-through;
+    }
+
+    .week-todo-more {
+      font-size: 11px;
+      color: var(--ink-muted);
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .week-day-empty {
+      font-size: 11px;
+      color: var(--ink-muted);
+      text-align: center;
+      padding: 8px 0;
+      opacity: 0.6;
+    }
+
+    @media (max-width: 900px) {
+      .week-view {
+        grid-template-columns: repeat(7, minmax(80px, 1fr));
+        overflow-x: auto;
+        padding-bottom: 16px;
+      }
+
+      .week-day {
+        min-width: 100px;
+      }
     }
 
     /* 输入区 */
@@ -893,7 +1004,7 @@
       <div class="login-card">
         <button id="closeLoginModal" class="modal-close" title="关闭">×</button>
         <div class="login-header">
-          <h1 class="login-title">日程</h1>
+          <h1 class="login-title">Daily</h1>
           <p class="login-subtitle">每日计划 · 随心而行</p>
         </div>
 
@@ -919,8 +1030,8 @@
     <!-- 侧边栏 -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-title">日程</div>
-        <div class="brand-subtitle">SCHEDULE · Daily Planner</div>
+        <div class="brand-title">Daily</div>
+        <div class="brand-subtitle">每日计划 · Simple & Focused</div>
       </div>
 
       <div class="calendar-section">
@@ -960,6 +1071,10 @@
           </div>
         </div>
       </header>
+
+      <div class="week-view" id="weekView">
+        <!-- 本周视图动态生成 -->
+      </div>
 
       <div class="input-section">
         <div class="todo-input-wrapper">
@@ -1002,6 +1117,7 @@
     const todoList = document.getElementById('todoList')
     const emptyState = document.getElementById('emptyState')
     const statsText = document.getElementById('statsText')
+    const weekView = document.getElementById('weekView')
     const currentMonth = document.getElementById('currentMonth')
     const calendarGrid = document.getElementById('calendarGrid')
     const prevMonth = document.getElementById('prevMonth')
@@ -1094,6 +1210,7 @@
           saveLocalTodos()
           renderTodos()
           renderCalendar()
+          renderWeekView()
           setSyncButtonState('success')
           updateSyncStatus(true)
         }
@@ -1495,6 +1612,58 @@
       dateTitle.textContent = formatDisplayDate(dateStr)
       weekdayLabel.textContent = getWeekday(dateStr)
       renderTodos()
+      renderWeekView()
+    }
+
+    function renderWeekView() {
+      // 获取本周日期范围（周一开始）
+      const today = new Date()
+      const currentDay = today.getDay() // 0是周日
+      const diff = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1)
+      const monday = new Date(today.setDate(diff))
+
+      const weekDays = []
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(monday)
+        day.setDate(monday.getDate() + i)
+        weekDays.push(day)
+      }
+
+      const weekdays = ['一', '二', '三', '四', '五', '六', '日']
+
+      weekView.innerHTML = weekDays.map((date, index) => {
+        const dateStr = formatDate(date)
+        const dayNum = date.getDate()
+        const isToday = formatDate(new Date()) === dateStr
+        const isSelected = selectedDate === dateStr
+        const dayTodos = todos[dateStr] || []
+        const visibleTodos = dayTodos.filter(t => !t.deleted)
+
+        let todoHTML = ''
+        if (visibleTodos.length === 0) {
+          todoHTML = '<div class="week-day-empty">无待办</div>'
+        } else {
+          const displayTodos = visibleTodos.slice(0, 3)
+          todoHTML = displayTodos.map(t => `
+            <div class="week-todo-item ${t.completed ? 'completed' : ''}">${escapeHtml(t.text)}</div>
+          `).join('')
+          if (visibleTodos.length > 3) {
+            todoHTML += `<div class="week-todo-more">+${visibleTodos.length - 3} 更多</div>`
+          }
+        }
+
+        return `
+          <div class="week-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}" onclick="selectDate('${dateStr}')">
+            <div class="week-day-header">
+              <span class="week-day-name">周${weekdays[index]}</span>
+              <span class="week-day-date">${dayNum}</span>
+            </div>
+            <div class="week-day-todos">
+              ${todoHTML}
+            </div>
+          </div>
+        `
+      }).join('')
     }
 
     // ========== 初始化 ==========
