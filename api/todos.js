@@ -22,7 +22,9 @@ async function redisCommand(command, ...args) {
 
 // Vercel Serverless Function handler
 module.exports = async (req, res) => {
-  const pathname = req.url;
+  // 获取路径（去掉查询参数）
+  const url = new URL(req.url, `https://${req.headers.host || 'localhost'}`);
+  const pathname = url.pathname;
 
   // CORS 处理
   if (req.method === 'OPTIONS') {
@@ -62,7 +64,7 @@ module.exports = async (req, res) => {
     const userKey = `todos:${password}`;
 
     // GET /api/todos - 获取待办
-    if (pathname === '/api/todos' && req.method === 'GET') {
+    if ((pathname === '/api/todos' || pathname === '/todos') && req.method === 'GET') {
       try {
         const result = await redisCommand('GET', userKey);
         const todos = result.result ? JSON.parse(result.result) : {};
@@ -74,7 +76,7 @@ module.exports = async (req, res) => {
     }
 
     // POST /api/todos - 保存所有待办
-    if (pathname === '/api/todos' && req.method === 'POST') {
+    if ((pathname === '/api/todos' || pathname === '/todos') && req.method === 'POST') {
       const { todos } = req.body;
       await redisCommand('SET', userKey, JSON.stringify(todos));
       res.status(200).json({ success: true, message: '保存成功' });
@@ -82,7 +84,7 @@ module.exports = async (req, res) => {
     }
 
     // PUT /api/todos/sync - 同步（合并本地和云端）
-    if (pathname === '/api/todos/sync' && req.method === 'PUT') {
+    if ((pathname === '/api/todos/sync' || pathname === '/todos/sync') && req.method === 'PUT') {
       const { localTodos } = req.body;
 
       // 获取云端数据
