@@ -1,4 +1,26 @@
-import { kv } from '@vercel/kv';
+// 从环境变量读取 Upstash Redis 配置
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+// Redis 命令执行
+async function redisCommand(command, ...args) {
+  const encodedArgs = args.map(arg => {
+    // 对参数进行 URL 编码，处理特殊字符
+    return encodeURIComponent(arg);
+  });
+
+  const response = await fetch(`${UPSTASH_URL}/${command}/${encodedArgs.join('/')}`, {
+    headers: {
+      'Authorization': `Bearer ${UPSTASH_TOKEN}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Redis error: ${response.status}`);
+  }
+
+  return await response.json();
+}
 
 export default async function handler(request) {
   const url = new URL(request.url);
@@ -20,6 +42,17 @@ export default async function handler(request) {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*'
   };
+
+  // 检查环境变量是否配置
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) {
+    return new Response(JSON.stringify({
+      error: '数据库未配置',
+      message: '请在 Vercel 环境变量中设置 UPSTASH_REDIS_REST_URL 和 UPSTASH_REDIS_REST_TOKEN'
+    }), {
+      status: 500,
+      headers
+    });
+  }
 
   try {
     // 获取认证信息
@@ -43,18 +76,28 @@ export default async function handler(request) {
 
     // GET /api/todos - 获取待办
     if (pathname === '/api/todos' && request.method === 'GET') {
-      const todos = await kv.get(userKey) || {};
-      return new Response(JSON.stringify({ success: true, data: todos }), {
-        status: 200,
-        headers
-      });
+      try {
+        const result = await redisCommand('GET', userKey);
+        const todos = result.result ? JSON.parse(result.result) : {};
+        return new Response(JSON.stringify({ success: true, data: todos }), {
+          status: 200,
+          headers
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ success: true, data: {} }), {
+          status: 200,
+          headers
+        });
+      }
     }
 
     // POST /api/todos - 保存所有待办
     if (pathname === '/api/todos' && request.method === 'POST') {
       const body = await request.json();
       const { todos } = body;
-      await kv.set(userKey, todos);
+
+      await redisCommand('SET', userKey, JSON.stringify(todos));
+
       return new Response(JSON.stringify({ success: true, message: '保存成功' }), {
         status: 200,
         headers
@@ -67,13 +110,21 @@ export default async function handler(request) {
       const { localTodos } = body;
 
       // 获取云端数据
-      const cloudTodos = await kv.get(userKey) || {};
+      let cloudTodos = {};
+      try {
+        const result = await redisCommand('GET', userKey);
+        if (result.result) {
+          cloudTodos = JSON.parse(result.result);
+        }
+      } catch (e) {
+        cloudTodos = {};
+      }
 
       // 合并策略：按更新时间取最新
       const merged = mergeTodos(localTodos, cloudTodos);
 
       // 保存合并后的数据
-      await kv.set(userKey, merged);
+      await redisCommand('SET', userKey, JSON.stringify(merged));
 
       return new Response(JSON.stringify({
         success: true,
@@ -105,7 +156,7 @@ export default async function handler(request) {
 // 合并待办：简单的最后写入优先
 function mergeTodos(local, cloud) {
   const merged = {};
-  const allDates = new Set([...Object.keys(local), ...Object.keys(cloud)]);
+  const allDates = new Set([...Object.keys(local || {}), ...Object.keys(cloud || {})]);
 
   for (const date of allDates) {
     const localList = local[date] || [];
