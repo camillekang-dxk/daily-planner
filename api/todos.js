@@ -63,8 +63,11 @@ module.exports = async (req, res) => {
 
     const userKey = `todos:${password}`;
 
-    // GET /api/todos - 获取待办
-    if (pathname === '/todos' && req.method === 'GET') {
+    // 标准化路径：移除 /api 前缀（如果存在）
+    const cleanPath = pathname.startsWith('/api') ? pathname.slice(4) : pathname;
+
+    // GET /todos - 获取待办
+    if (cleanPath === '/todos' && req.method === 'GET') {
       try {
         const result = await redisCommand('GET', userKey);
         const todos = result.result ? JSON.parse(result.result) : {};
@@ -75,16 +78,16 @@ module.exports = async (req, res) => {
       return;
     }
 
-    // POST /api/todos - 保存所有待办
-    if (pathname === '/todos' && req.method === 'POST') {
+    // POST /todos - 保存所有待办
+    if (cleanPath === '/todos' && req.method === 'POST') {
       const { todos } = req.body;
       await redisCommand('SET', userKey, JSON.stringify(todos));
       res.status(200).json({ success: true, message: '保存成功' });
       return;
     }
 
-    // PUT /api/todos/sync - 同步（合并本地和云端）
-    if (pathname === '/todos/sync' && req.method === 'PUT') {
+    // PUT /todos/sync - 同步（合并本地和云端）
+    if (cleanPath === '/todos/sync' && req.method === 'PUT') {
       const { localTodos } = req.body;
 
       // 获取云端数据
