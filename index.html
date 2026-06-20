@@ -560,9 +560,37 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      margin-top: 12px;
+      margin-top: 8px;
       font-size: 12px;
       color: var(--ink-muted);
+    }
+
+    .current-account {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: var(--bg-primary);
+      border-radius: var(--radius);
+      font-size: 12px;
+      color: var(--ink-secondary);
+    }
+
+    .current-account.hidden {
+      display: none;
+    }
+
+    .account-label {
+      color: var(--ink-muted);
+    }
+
+    .account-value {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      color: var(--ink-primary);
+      letter-spacing: 0.05em;
     }
 
     .sync-dot {
@@ -909,6 +937,10 @@
       <div class="sidebar-actions">
         <button id="goToday" class="action-btn">今日</button>
         <button id="syncBtn" class="action-btn primary">同步到云端</button>
+        <div id="currentAccount" class="current-account hidden">
+          <span class="account-label">当前账号</span>
+          <span id="accountValue" class="account-value"></span>
+        </div>
         <div id="syncStatus" class="sync-status">
           <span class="sync-dot"></span>
           <span>本地模式</span>
@@ -978,6 +1010,8 @@
     const syncBtn = document.getElementById('syncBtn')
     const syncStatus = document.getElementById('syncStatus')
     const logoutBtn = document.getElementById('logoutBtn')
+    const currentAccount = document.getElementById('currentAccount')
+    const accountValue = document.getElementById('accountValue')
     const loginModal = document.getElementById('loginModal')
     const syncPasswordInput = document.getElementById('syncPassword')
     const loginBtn = document.getElementById('loginBtn')
@@ -1109,6 +1143,17 @@
       }
     }
 
+    function updateCurrentAccountDisplay() {
+      if (syncPassword) {
+        const masked = syncPassword.slice(0, 2) + '***' + syncPassword.slice(-2)
+        accountValue.textContent = masked
+        currentAccount.classList.remove('hidden')
+      } else {
+        currentAccount.classList.add('hidden')
+        accountValue.textContent = ''
+      }
+    }
+
     // ========== 账号管理 ==========
     function loadAccountData() {
       if (syncPassword) {
@@ -1150,6 +1195,7 @@
       loadAccountData()
       hideLoginModal()
       logoutBtn.style.display = 'block'
+      updateCurrentAccountDisplay()
       updateSyncStatus(true)
       selectDate(formatDate(new Date()))
       renderTodos()
@@ -1220,6 +1266,7 @@
 
       hideLoginModal()
       logoutBtn.style.display = 'block'
+      updateCurrentAccountDisplay()
 
       try {
         const response = await apiCall('/todos')
@@ -1241,6 +1288,7 @@
       syncPassword = ''
       localStorage.removeItem('daily-planner-current-account')
       logoutBtn.style.display = 'none'
+      updateCurrentAccountDisplay()
       updateSyncStatus(false)
       todos = {}
       syncPasswordInput.value = ''
@@ -1456,6 +1504,7 @@
       if (syncPassword) {
         hideLoginModal()
         logoutBtn.style.display = 'block'
+        updateCurrentAccountDisplay()
         updateSyncStatus(true)
         syncToCloud()
       } else {
