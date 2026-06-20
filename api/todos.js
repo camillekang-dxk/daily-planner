@@ -1,17 +1,11 @@
+// Vercel Serverless Function
 // 从环境变量读取 Upstash Redis 配置
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-// 导出 Edge Function 配置
-export const config = {
-  runtime: 'edge'
-};
-
 // Redis 命令执行
 async function redisCommand(command, ...args) {
-  const encodedArgs = args.map(arg => {
-    return encodeURIComponent(arg);
-  });
+  const encodedArgs = args.map(arg => encodeURIComponent(arg));
 
   const response = await fetch(`${UPSTASH_URL}/${command}/${encodedArgs.join('/')}`, {
     headers: {
@@ -26,92 +20,70 @@ async function redisCommand(command, ...args) {
   return await response.json();
 }
 
-export default async function handler(request) {
-  const url = new URL(request.url);
-  const pathname = url.pathname;
+// Vercel Serverless Function handler
+module.exports = async (req, res) => {
+  const pathname = req.url;
 
   // CORS 处理
-  if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      }
-    });
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.status(200).end();
+    return;
   }
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*'
-  };
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
 
   // 检查环境变量是否配置
   if (!UPSTASH_URL || !UPSTASH_TOKEN) {
-    return new Response(JSON.stringify({
+    res.status(500).json({
       error: '数据库未配置',
       message: '请在 Vercel 环境变量中设置 UPSTASH_REDIS_REST_URL 和 UPSTASH_REDIS_REST_TOKEN'
-    }), {
-      status: 500,
-      headers
     });
+    return;
   }
 
   try {
     // 获取认证信息
-    const authHeader = request.headers.get('authorization');
+    const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: '需要认证' }), {
-        status: 401,
-        headers
-      });
+      res.status(401).json({ error: '需要认证' });
+      return;
     }
 
     const password = authHeader.replace('Bearer ', '');
     if (!password) {
-      return new Response(JSON.stringify({ error: '密码不能为空' }), {
-        status: 401,
-        headers
-      });
+      res.status(401).json({ error: '密码不能为空' });
+      return;
     }
 
     const userKey = `todos:${password}`;
 
     // GET /api/todos - 获取待办
-    if (pathname === '/api/todos' && request.method === 'GET') {
+    if (pathname === '/api/todos' && req.method === 'GET') {
       try {
         const result = await redisCommand('GET', userKey);
         const todos = result.result ? JSON.parse(result.result) : {};
-        return new Response(JSON.stringify({ success: true, data: todos }), {
-          status: 200,
-          headers
-        });
+        res.status(200).json({ success: true, data: todos });
       } catch (e) {
-        return new Response(JSON.stringify({ success: true, data: {} }), {
-          status: 200,
-          headers
-        });
+        res.status(200).json({ success: true, data: {} });
       }
+      return;
     }
 
     // POST /api/todos - 保存所有待办
-    if (pathname === '/api/todos' && request.method === 'POST') {
-      const body = await request.json();
-      const { todos } = body;
-
+    if (pathname === '/api/todos' && req.method === 'POST') {
+      const { todos } = req.body;
       await redisCommand('SET', userKey, JSON.stringify(todos));
-
-      return new Response(JSON.stringify({ success: true, message: '保存成功' }), {
-        status: 200,
-        headers
-      });
+      res.status(200).json({ success: true, message: '保存成功' });
+      return;
     }
 
     // PUT /api/todos/sync - 同步（合并本地和云端）
-    if (pathname === '/api/todos/sync' && request.method === 'PUT') {
-      const body = await request.json();
-      const { localTodos } = body;
+    if (pathname === '/api/todos/sync' && req.method === 'PUT') {
+      const { localTodos } = req.body;
 
       // 获取云端数据
       let cloudTodos = {};
@@ -130,32 +102,24 @@ export default async function handler(request) {
       // 保存合并后的数据
       await redisCommand('SET', userKey, JSON.stringify(merged));
 
-      return new Response(JSON.stringify({
+      res.status(200).json({
         success: true,
         data: merged,
         syncTime: Date.now()
-      }), {
-        status: 200,
-        headers
       });
+      return;
     }
 
-    return new Response(JSON.stringify({ error: '接口不存在' }), {
-      status: 404,
-      headers
-    });
+    res.status(404).json({ error: '接口不存在' });
 
   } catch (error) {
     console.error('API Error:', error);
-    return new Response(JSON.stringify({
+    res.status(500).json({
       error: '服务器错误',
       message: error.message
-    }), {
-      status: 500,
-      headers
     });
   }
-}
+};
 
 // 合并待办：简单的最后写入优先
 function mergeTodos(local, cloud) {
