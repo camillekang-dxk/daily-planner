@@ -3,6 +3,16 @@
   "github": {
     "enabled": true
   },
+  "rewrites": [
+    {
+      "source": "/api/todos/:path*",
+      "destination": "/api/todos.js"
+    },
+    {
+      "source": "/api/todos",
+      "destination": "/api/todos.js"
+    }
+  ],
   "functions": {
     "api/*.js": {
       "maxDuration": 10
