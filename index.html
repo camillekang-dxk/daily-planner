@@ -346,31 +346,42 @@
       font-size: 15px;
       color: var(--text-primary);
       word-break: break-word;
+      cursor: pointer;
     }
 
-    .todo-delete {
-      width: 32px;
-      height: 32px;
+    .todo-text:hover {
+      color: var(--primary-color);
+    }
+
+    .todo-actions {
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .todo-item:hover .todo-actions {
+      opacity: 1;
+    }
+
+    .todo-edit {
+      width: 28px;
+      height: 28px;
       border: none;
       background: transparent;
       color: var(--text-muted);
       cursor: pointer;
       border-radius: 50%;
-      opacity: 0;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 14px;
     }
 
-    .todo-item:hover .todo-delete {
-      opacity: 1;
-    }
-
-    .todo-delete:hover {
-      background: #fff1f0;
-      color: var(--danger-color);
+    .todo-edit:hover {
+      background: #e6f7ff;
+      color: var(--primary-color);
     }
 
     /* 空状态 */
@@ -1061,8 +1072,8 @@
           dayEl.classList.add('selected')
         }
 
-        // 标记有待办的日期
-        if (todos[dateStr] && todos[dateStr].length > 0) {
+        // 标记有待办的日期（过滤掉已删除的）
+        if (todos[dateStr] && todos[dateStr].some(t => !t.deleted)) {
           dayEl.classList.add('has-todo')
         }
 
@@ -1133,20 +1144,46 @@
       }
     }
 
-    // ========== 删除待办 ==========
+    // ========== 删除待办（软删除，支持同步）==========
     function deleteTodo(id) {
-      todos[selectedDate] = todos[selectedDate].filter(t => t.id !== id)
-      if (todos[selectedDate].length === 0) {
-        delete todos[selectedDate]
-      }
-      saveLocalTodos()
+      const dateTodos = todos[selectedDate]
+      const todo = dateTodos.find(t => t.id === id)
+      if (todo) {
+        todo.deleted = true
+        todo.updatedAt = new Date().toISOString()
+        saveLocalTodos()
 
-      if (syncPassword) {
-        debouncedSync()
-      }
+        if (syncPassword) {
+          debouncedSync()
+        }
 
-      renderTodos()
-      renderCalendar()
+        renderTodos()
+        renderCalendar()
+      }
+    }
+
+    // ========== 编辑待办 ==========
+    let editingTodoId = null
+
+    function editTodo(id) {
+      const dateTodos = todos[selectedDate]
+      const todo = dateTodos.find(t => t.id === id)
+      if (todo) {
+        editingTodoId = id
+        const newText = prompt('编辑待办事项:', todo.text)
+        if (newText && newText.trim() !== '') {
+          todo.text = newText.trim()
+          todo.updatedAt = new Date().toISOString()
+          saveLocalTodos()
+
+          if (syncPassword) {
+            debouncedSync()
+          }
+
+          renderTodos()
+        }
+        editingTodoId = null
+      }
     }
 
     // ========== 防抖同步 ==========
@@ -1177,13 +1214,15 @@
 
       emptyState.classList.add('hidden')
 
-      // 按创建时间排序，未完成的在前
-      const sortedTodos = [...dateTodos].sort((a, b) => {
-        if (a.completed === b.completed) {
-          return new Date(b.createdAt) - new Date(a.createdAt)
-        }
-        return a.completed ? 1 : -1
-      })
+      // 按创建时间排序，未完成的在前，过滤掉已删除的
+      const sortedTodos = dateTodos
+        .filter(t => !t.deleted)
+        .sort((a, b) => {
+          if (a.completed === b.completed) {
+            return new Date(b.createdAt) - new Date(a.createdAt)
+          }
+          return a.completed ? 1 : -1
+        })
 
       todoList.innerHTML = sortedTodos.map(todo => `
         <div class="todo-item ${todo.completed ? 'completed' : ''}">
@@ -1191,14 +1230,18 @@
             class="todo-checkbox ${todo.completed ? 'checked' : ''}"
             onclick="toggleTodo(${todo.id})"
           ></div>
-          <span class="todo-text">${escapeHtml(todo.text)}</span>
-          <button class="todo-delete" onclick="deleteTodo(${todo.id})" title="删除">✕</button>
+          <span class="todo-text" onclick="editTodo(${todo.id})">${escapeHtml(todo.text)}</span>
+          <div class="todo-actions">
+            <button class="todo-edit" onclick="editTodo(${todo.id})" title="编辑">✎</button>
+            <button class="todo-delete" onclick="deleteTodo(${todo.id})" title="删除">✕</button>
+          </div>
         </div>
       `).join('')
 
-      // 更新统计
-      const completed = dateTodos.filter(t => t.completed).length
-      statsText.textContent = `${completed}/${dateTodos.length} 已完成`
+      // 更新统计（不包含已删除的）
+      const visibleTodos = dateTodos.filter(t => !t.deleted)
+      const completed = visibleTodos.filter(t => t.completed).length
+      statsText.textContent = `${completed}/${visibleTodos.length} 已完成`
     }
 
     // ========== 启动应用 ==========
