@@ -465,6 +465,103 @@
       color: var(--text-primary);
     }
 
+    /* 账号列表样式 */
+    .account-list {
+      margin-bottom: 20px;
+    }
+
+    .account-list h3 {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .accounts-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .account-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .account-item:hover {
+      background: #e6f7ff;
+      border-color: var(--primary-color);
+    }
+
+    .account-item.active {
+      background: #e6f7ff;
+      border-color: var(--primary-color);
+    }
+
+    .account-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .account-delete {
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .account-item:hover .account-delete {
+      opacity: 1;
+    }
+
+    .account-delete:hover {
+      background: #fff1f0;
+      color: var(--danger-color);
+    }
+
+    .login-divider {
+      position: relative;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .login-divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .login-divider span {
+      position: relative;
+      background: white;
+      padding: 0 12px;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
     .login-box h2 {
       font-size: 24px;
       margin-bottom: 8px;
@@ -633,6 +730,19 @@
     <div class="login-box">
       <button id="closeLoginModal" class="modal-close-btn" title="关闭">×</button>
       <h2>🔐 同步登录</h2>
+
+      <!-- 已保存账号列表 -->
+      <div id="accountList" class="account-list">
+        <h3>已保存的账号</h3>
+        <div id="accountsContainer" class="accounts-container">
+          <!-- 动态生成账号列表 -->
+        </div>
+      </div>
+
+      <div class="login-divider">
+        <span>使用新账号</span>
+      </div>
+
       <p>输入同步密码，在任何设备访问你的计划</p>
       <input
         type="password"
@@ -723,7 +833,8 @@
     let currentDate = new Date()
     let selectedDate = formatDate(new Date())
     let todos = {}
-    let syncPassword = localStorage.getItem('daily-planner-password') || ''
+    let syncPassword = localStorage.getItem('daily-planner-current-account') || ''
+    let accounts = JSON.parse(localStorage.getItem('daily-planner-accounts') || '[]')
     let isOnline = false
     let syncTimeout = null
 
@@ -747,6 +858,8 @@
     const syncPasswordInput = document.getElementById('syncPassword')
     const loginBtn = document.getElementById('loginBtn')
     const closeLoginModal = document.getElementById('closeLoginModal')
+    const accountList = document.getElementById('accountList')
+    const accountsContainer = document.getElementById('accountsContainer')
 
     // ========== 工具函数 ==========
     function formatDate(date) {
@@ -878,6 +991,7 @@
     // ========== 登录相关 ==========
     function showLoginModal() {
       loginModal.classList.remove('hidden')
+      renderAccountList()
       syncPasswordInput.focus()
     }
 
@@ -892,8 +1006,15 @@
         return
       }
 
+      // 保存当前账号（如果有）
+      if (syncPassword) {
+        saveLocalTodos()
+      }
+
+      // 切换到新账号
       syncPassword = password
-      localStorage.setItem('daily-planner-password', password)
+      addAccount(password)
+      loadAccountData()
 
       hideLoginModal()
       logoutBtn.style.display = 'block'
@@ -901,7 +1022,7 @@
       // 尝试从云端同步
       try {
         const response = await apiCall('/todos')
-        if (response.success && response.data) {
+        if (response.success && response.data && Object.keys(response.data).length > 0) {
           todos = response.data
           saveLocalTodos()
         }
@@ -916,20 +1037,25 @@
     }
 
     function handleLogout() {
+      // 保存当前账号数据
+      saveLocalTodos()
+
       syncPassword = ''
-      localStorage.removeItem('daily-planner-password')
+      localStorage.removeItem('daily-planner-current-account')
       logoutBtn.style.display = 'none'
       updateSyncStatus(false)
+      todos = {}
+      syncPasswordInput.value = ''
+      renderAccountList()
       showLoginModal()
+      renderTodos()
+      renderCalendar()
     }
 
     // ========== 初始化 ==========
     function init() {
-      // 从 localStorage 加载数据
-      const savedTodos = localStorage.getItem('daily-planner-todos')
-      if (savedTodos) {
-        todos = JSON.parse(savedTodos)
-      }
+      // 加载当前账号的数据
+      loadAccountData()
 
       // 检查是否已登录
       if (syncPassword) {
@@ -1196,9 +1322,102 @@
       }, 1000)
     }
 
+    // ========== 账号管理 ==========
+    function loadAccountData() {
+      if (syncPassword) {
+        const savedTodos = localStorage.getItem(`daily-planner-todos-${syncPassword}`)
+        todos = savedTodos ? JSON.parse(savedTodos) : {}
+      } else {
+        todos = {}
+      }
+    }
+
+    function saveLocalTodos() {
+      if (syncPassword) {
+        localStorage.setItem(`daily-planner-todos-${syncPassword}`, JSON.stringify(todos))
+      }
+    }
+
+    function saveAccounts() {
+      localStorage.setItem('daily-planner-accounts', JSON.stringify(accounts))
+    }
+
+    function addAccount(password) {
+      if (!accounts.includes(password)) {
+        accounts.push(password)
+        saveAccounts()
+      }
+      localStorage.setItem('daily-planner-current-account', password)
+    }
+
+    function removeAccount(password) {
+      accounts = accounts.filter(p => p !== password)
+      saveAccounts()
+      localStorage.removeItem(`daily-planner-todos-${password}`)
+    }
+
+    function switchAccount(password) {
+      // 保存当前账号数据
+      saveLocalTodos()
+
+      // 切换到新账号
+      syncPassword = password
+      addAccount(password)
+      loadAccountData()
+
+      // 刷新界面
+      hideLoginModal()
+      logoutBtn.style.display = 'block'
+      updateSyncStatus(true)
+      selectDate(formatDate(new Date()))
+      renderTodos()
+      renderCalendar()
+
+      // 同步新账号数据
+      syncToCloud()
+    }
+
+    function renderAccountList() {
+      if (accounts.length === 0) {
+        accountList.style.display = 'none'
+        return
+      }
+
+      accountList.style.display = 'block'
+      accountsContainer.innerHTML = accounts.map(password => {
+        const masked = password.slice(0, 2) + '****' + password.slice(-2)
+        const isActive = password === syncPassword
+        return `
+          <div class="account-item ${isActive ? 'active' : ''}" onclick="switchAccount('${password}')">
+            <span class="account-name">${masked}</span>
+            <button class="account-delete" onclick="event.stopPropagation(); removeAccountAndRefresh('${password}')" title="删除账号">×</button>
+          </div>
+        `
+      }).join('')
+    }
+
+    function removeAccountAndRefresh(password) {
+      if (confirm('确定要删除这个账号吗？本地数据将被清除，但云端数据不受影响。')) {
+        removeAccount(password)
+        if (syncPassword === password) {
+          // 如果删除的是当前账号，登出
+          syncPassword = ''
+          localStorage.removeItem('daily-planner-current-account')
+          todos = {}
+          logoutBtn.style.display = 'none'
+          updateSyncStatus(false)
+        }
+        renderAccountList()
+        renderTodos()
+        renderCalendar()
+      }
+    }
+
     // ========== 保存数据 ==========
     function saveLocalTodos() {
-      localStorage.setItem('daily-planner-todos', JSON.stringify(todos))
+      if (syncPassword) {
+        localStorage.setItem(`daily-planner-todos-${syncPassword}`, JSON.stringify(todos))
+      }
     }
 
     // ========== 渲染待办列表 ==========
