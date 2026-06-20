@@ -18,6 +18,7 @@
       --primary-hover: #3a7bc8;
       --success-color: #52c41a;
       --danger-color: #ff4d4f;
+      --warning-color: #faad14;
       --bg-color: #f5f7fa;
       --sidebar-bg: #ffffff;
       --card-bg: #ffffff;
@@ -147,9 +148,12 @@
 
     .quick-actions {
       margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .today-btn {
+    .today-btn, .sync-btn {
       width: 100%;
       padding: 10px;
       border: 1px solid var(--primary-color);
@@ -160,10 +164,32 @@
       font-size: 14px;
       font-weight: 500;
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
-    .today-btn:hover {
+    .today-btn:hover, .sync-btn:hover {
       background: var(--primary-color);
+      color: white;
+    }
+
+    .sync-btn.syncing {
+      background: var(--warning-color);
+      border-color: var(--warning-color);
+      color: white;
+    }
+
+    .sync-btn.success {
+      background: var(--success-color);
+      border-color: var(--success-color);
+      color: white;
+    }
+
+    .sync-btn.error {
+      background: var(--danger-color);
+      border-color: var(--danger-color);
       color: white;
     }
 
@@ -376,6 +402,129 @@
       color: var(--text-muted);
     }
 
+    /* 登录模态框 */
+    .login-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .login-modal.hidden {
+      display: none;
+    }
+
+    .login-box {
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 360px;
+      width: 90%;
+    }
+
+    .login-box h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .login-box p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-color);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .login-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .login-hint {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #389e0d;
+    }
+
+    .logout-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .logout-btn:hover {
+      color: var(--danger-color);
+      border-color: var(--danger-color);
+    }
+
+    /* 同步状态指示 */
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .sync-status.online {
+      color: var(--success-color);
+    }
+
+    .sync-status.offline {
+      color: var(--danger-color);
+    }
+
+    .sync-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
     /* 滚动条样式 */
     .todo-list-section::-webkit-scrollbar {
       width: 6px;
@@ -419,6 +568,7 @@
       .sidebar {
         width: 100%;
         height: auto;
+        max-height: 50vh;
         padding: 16px;
       }
 
@@ -434,10 +584,33 @@
       .date-display h1 {
         font-size: 22px;
       }
+
+      .login-box {
+        padding: 24px;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- 登录模态框 -->
+  <div id="loginModal" class="login-modal">
+    <div class="login-box">
+      <h2>🔐 同步登录</h2>
+      <p>输入同步密码，在任何设备访问你的计划</p>
+      <input
+        type="password"
+        id="syncPassword"
+        class="login-input"
+        placeholder="请输入同步密码..."
+        autocomplete="off"
+      >
+      <button id="loginBtn" class="login-btn">开始同步</button>
+      <div class="login-hint">
+        💡 提示：密码即账号，在新设备输入相同密码即可同步数据
+      </div>
+    </div>
+  </div>
+
   <div class="app-container">
     <!-- 侧边栏 - 日历导航 -->
     <aside class="sidebar">
@@ -456,6 +629,12 @@
 
       <div class="quick-actions">
         <button id="goToday" class="today-btn">回到今天</button>
+        <button id="syncBtn" class="sync-btn">🔄 同步到云端</button>
+        <div class="sync-status" id="syncStatus">
+          <span class="sync-dot"></span>
+          <span>本地模式</span>
+        </div>
+        <button id="logoutBtn" class="logout-btn" style="display: none;">切换账号</button>
       </div>
     </aside>
 
@@ -497,12 +676,21 @@
   </div>
 
   <script>
-    // 状态管理
+    // ========== 配置 ==========
+    // 根据当前域名自动判断 API 地址
+    const API_BASE = window.location.hostname === 'localhost'
+      ? 'http://localhost:3000/api'
+      : `${window.location.origin}/api`
+
+    // ========== 状态管理 ==========
     let currentDate = new Date()
     let selectedDate = formatDate(new Date())
     let todos = {}
+    let syncPassword = localStorage.getItem('daily-planner-password') || ''
+    let isOnline = false
+    let syncTimeout = null
 
-    // DOM 元素
+    // ========== DOM 元素 ==========
     const dateTitle = document.getElementById('dateTitle')
     const weekdayLabel = document.getElementById('weekdayLabel')
     const todoInput = document.getElementById('todoInput')
@@ -515,8 +703,14 @@
     const prevMonth = document.getElementById('prevMonth')
     const nextMonth = document.getElementById('nextMonth')
     const goToday = document.getElementById('goToday')
+    const syncBtn = document.getElementById('syncBtn')
+    const syncStatus = document.getElementById('syncStatus')
+    const logoutBtn = document.getElementById('logoutBtn')
+    const loginModal = document.getElementById('loginModal')
+    const syncPasswordInput = document.getElementById('syncPassword')
+    const loginBtn = document.getElementById('loginBtn')
 
-    // 工具函数
+    // ========== 工具函数 ==========
     function formatDate(date) {
       const year = date.getFullYear()
       const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -545,12 +739,169 @@
       return div.innerHTML
     }
 
-    // 初始化
+    // ========== API 调用 ==========
+    async function apiCall(endpoint, method = 'GET', body = null) {
+      if (!syncPassword) return null
+
+      const options = {
+        method,
+        headers: {
+          'Authorization': `Bearer ${syncPassword}`,
+          'Content-Type': 'application/json'
+        }
+      }
+
+      if (body) {
+        options.body = JSON.stringify(body)
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, options)
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        return await response.json()
+      } catch (error) {
+        console.error('API Error:', error)
+        throw error
+      }
+    }
+
+    // ========== 同步功能 ==========
+    async function syncToCloud() {
+      if (!syncPassword) {
+        showLoginModal()
+        return
+      }
+
+      setSyncButtonState('syncing')
+
+      try {
+        // 先尝试从云端拉取（合并策略）
+        const cloudData = await apiCall('/todos/sync', 'PUT', {
+          localTodos: todos,
+          lastSync: Date.now()
+        })
+
+        if (cloudData.success) {
+          todos = cloudData.data
+          saveLocalTodos()
+          renderTodos()
+          renderCalendar()
+          setSyncButtonState('success')
+          updateSyncStatus(true)
+        }
+      } catch (error) {
+        console.error('Sync failed:', error)
+        setSyncButtonState('error')
+        updateSyncStatus(false)
+      }
+
+      setTimeout(() => {
+        setSyncButtonState('idle')
+      }, 2000)
+    }
+
+    function setSyncButtonState(state) {
+      syncBtn.classList.remove('syncing', 'success', 'error')
+
+      switch (state) {
+        case 'syncing':
+          syncBtn.classList.add('syncing')
+          syncBtn.textContent = '🔄 同步中...'
+          break
+        case 'success':
+          syncBtn.classList.add('success')
+          syncBtn.textContent = '✓ 同步成功'
+          break
+        case 'error':
+          syncBtn.classList.add('error')
+          syncBtn.textContent = '✗ 同步失败'
+          break
+        default:
+          syncBtn.textContent = '🔄 同步到云端'
+      }
+    }
+
+    function updateSyncStatus(online) {
+      isOnline = online
+      const dot = syncStatus.querySelector('.sync-dot')
+      const text = syncStatus.querySelector('span:last-child')
+
+      if (online) {
+        syncStatus.classList.add('online')
+        syncStatus.classList.remove('offline')
+        text.textContent = '已同步到云端'
+      } else {
+        syncStatus.classList.remove('online')
+        syncStatus.classList.add('offline')
+        text.textContent = '本地模式（离线）'
+      }
+    }
+
+    // ========== 登录相关 ==========
+    function showLoginModal() {
+      loginModal.classList.remove('hidden')
+      syncPasswordInput.focus()
+    }
+
+    function hideLoginModal() {
+      loginModal.classList.add('hidden')
+    }
+
+    async function handleLogin() {
+      const password = syncPasswordInput.value.trim()
+      if (!password) {
+        alert('请输入同步密码')
+        return
+      }
+
+      syncPassword = password
+      localStorage.setItem('daily-planner-password', password)
+
+      hideLoginModal()
+      logoutBtn.style.display = 'block'
+
+      // 尝试从云端同步
+      try {
+        const response = await apiCall('/todos')
+        if (response.success && response.data) {
+          todos = response.data
+          saveLocalTodos()
+        }
+        updateSyncStatus(true)
+      } catch (error) {
+        // 云端没有数据或网络错误，使用本地数据
+        updateSyncStatus(false)
+      }
+
+      renderTodos()
+      renderCalendar()
+    }
+
+    function handleLogout() {
+      syncPassword = ''
+      localStorage.removeItem('daily-planner-password')
+      logoutBtn.style.display = 'none'
+      updateSyncStatus(false)
+      showLoginModal()
+    }
+
+    // ========== 初始化 ==========
     function init() {
       // 从 localStorage 加载数据
       const savedTodos = localStorage.getItem('daily-planner-todos')
       if (savedTodos) {
         todos = JSON.parse(savedTodos)
+      }
+
+      // 检查是否已登录
+      if (syncPassword) {
+        hideLoginModal()
+        logoutBtn.style.display = 'block'
+        updateSyncStatus(true)
+        // 尝试同步
+        syncToCloud()
+      } else {
+        showLoginModal()
       }
 
       // 设置今天为选中日期
@@ -561,9 +912,16 @@
 
       // 绑定事件
       bindEvents()
+
+      // 设置自动同步（每 30 秒）
+      setInterval(() => {
+        if (syncPassword && Object.keys(todos).length > 0) {
+          syncToCloud()
+        }
+      }, 30000)
     }
 
-    // 绑定事件
+    // ========== 绑定事件 ==========
     function bindEvents() {
       // 添加待办
       addBtn.addEventListener('click', addTodo)
@@ -588,16 +946,28 @@
         selectDate(formatDate(new Date()))
         renderCalendar()
       })
+
+      // 同步按钮
+      syncBtn.addEventListener('click', syncToCloud)
+
+      // 登录
+      loginBtn.addEventListener('click', handleLogin)
+      syncPasswordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleLogin()
+      })
+
+      // 登出
+      logoutBtn.addEventListener('click', handleLogout)
     }
 
-    // 选择日期
+    // ========== 选择日期 ==========
     function selectDate(dateStr) {
       selectedDate = dateStr
       updateDateDisplay()
       renderTodos()
     }
 
-    // 更新日期显示
+    // ========== 更新日期显示 ==========
     function updateDateDisplay() {
       dateTitle.textContent = formatDisplayDate(selectedDate)
 
@@ -608,7 +978,7 @@
       weekdayLabel.textContent = weekday
     }
 
-    // 渲染日历
+    // ========== 渲染日历 ==========
     function renderCalendar() {
       const year = currentDate.getFullYear()
       const month = currentDate.getMonth()
@@ -685,16 +1055,18 @@
       }
     }
 
-    // 添加待办
+    // ========== 添加待办 ==========
     function addTodo() {
       const text = todoInput.value.trim()
       if (!text) return
 
+      const now = new Date().toISOString()
       const newTodo = {
         id: Date.now(),
         text: text,
         completed: false,
-        createdAt: new Date().toISOString()
+        createdAt: now,
+        updatedAt: now
       }
 
       if (!todos[selectedDate]) {
@@ -702,41 +1074,67 @@
       }
 
       todos[selectedDate].push(newTodo)
-      saveTodos()
+      saveLocalTodos()
+
+      // 如果有密码，自动同步到云端
+      if (syncPassword) {
+        debouncedSync()
+      }
 
       todoInput.value = ''
       renderTodos()
       renderCalendar()
     }
 
-    // 切换完成状态
+    // ========== 切换完成状态 ==========
     function toggleTodo(id) {
       const dateTodos = todos[selectedDate]
       const todo = dateTodos.find(t => t.id === id)
       if (todo) {
         todo.completed = !todo.completed
-        saveTodos()
+        todo.updatedAt = new Date().toISOString()
+        saveLocalTodos()
+
+        if (syncPassword) {
+          debouncedSync()
+        }
+
         renderTodos()
       }
     }
 
-    // 删除待办
+    // ========== 删除待办 ==========
     function deleteTodo(id) {
       todos[selectedDate] = todos[selectedDate].filter(t => t.id !== id)
       if (todos[selectedDate].length === 0) {
         delete todos[selectedDate]
       }
-      saveTodos()
+      saveLocalTodos()
+
+      if (syncPassword) {
+        debouncedSync()
+      }
+
       renderTodos()
       renderCalendar()
     }
 
-    // 保存数据
-    function saveTodos() {
+    // ========== 防抖同步 ==========
+    function debouncedSync() {
+      if (syncTimeout) {
+        clearTimeout(syncTimeout)
+      }
+      syncTimeout = setTimeout(() => {
+        syncToCloud()
+      }, 1000)
+    }
+
+    // ========== 保存数据 ==========
+    function saveLocalTodos() {
       localStorage.setItem('daily-planner-todos', JSON.stringify(todos))
     }
 
-    // 渲染待办列表
+    // ========== 渲染待办列表 ==========
     function renderTodos() {
       const dateTodos = todos[selectedDate] || []
 
@@ -773,7 +1171,7 @@
       statsText.textContent = `${completed}/${dateTodos.length} 已完成`
     }
 
-    // 启动应用
+    // ========== 启动应用 ==========
     init()
   </script>
 </body>
