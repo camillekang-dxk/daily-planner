@@ -2,30 +2,5 @@
   "version": 2,
   "github": {
     "enabled": true
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
-      ]
-    }
-  ]
+  }
 }

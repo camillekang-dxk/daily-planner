@@ -2,10 +2,14 @@
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
+// 导出 Edge Function 配置
+export const config = {
+  runtime: 'edge'
+};
+
 // Redis 命令执行
 async function redisCommand(command, ...args) {
   const encodedArgs = args.map(arg => {
-    // 对参数进行 URL 编码，处理特殊字符
     return encodeURIComponent(arg);
   });
 
