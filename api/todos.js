@@ -3,6 +3,21 @@
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
+// 解析请求体（Vercel Node.js runtime 不会自动解析 JSON body）
+async function parseBody(req) {
+  return new Promise((resolve) => {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch {
+        resolve({});
+      }
+    });
+  });
+}
+
 // Redis 命令执行
 async function redisCommand(command, ...args) {
   const encodedArgs = args.map(arg => encodeURIComponent(arg));
@@ -22,6 +37,12 @@ async function redisCommand(command, ...args) {
 
 // Vercel Serverless Function handler
 module.exports = async (req, res) => {
+  // 解析请求体（对于 POST/PUT/PATCH 请求）
+  let body = {};
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+    body = await parseBody(req);
+  }
+
   // 获取路径（去掉查询参数）
   const url = new URL(req.url, `https://${req.headers.host || 'localhost'}`);
   const pathname = url.pathname;
@@ -80,7 +101,7 @@ module.exports = async (req, res) => {
 
     // POST /todos - 保存所有待办
     if (cleanPath === '/todos' && req.method === 'POST') {
-      const { todos } = req.body;
+      const { todos } = body;
       await redisCommand('SET', userKey, JSON.stringify(todos));
       res.status(200).json({ success: true, message: '保存成功' });
       return;
@@ -88,7 +109,7 @@ module.exports = async (req, res) => {
 
     // PUT /todos/sync - 同步（合并本地和云端）
     if (cleanPath === '/todos/sync' && req.method === 'PUT') {
-      const { localTodos } = req.body;
+      const { localTodos } = body;
 
       // 获取云端数据
       let cloudTodos = {};
