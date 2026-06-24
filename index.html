@@ -657,6 +657,213 @@
 
     .content-header {
       margin-bottom: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .search-btn:hover {
+      background: var(--accent-bamboo);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    /* 搜索面板 */
+    .search-panel {
+      background: var(--bg-paper);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(44, 44, 44, 0.06);
+    }
+
+    .search-panel.hidden {
+      display: none;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(44, 44, 44, 0.08);
+      transition: border-color 0.2s ease;
+    }
+
+    .search-input-wrapper:focus-within {
+      border-color: var(--accent-bamboo);
+    }
+
+    .search-icon {
+      font-size: 16px;
+      color: var(--ink-muted);
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      color: var(--ink-primary);
+      outline: none;
+      font-family: var(--font-sans);
+    }
+
+    .search-input::placeholder {
+      color: var(--ink-muted);
+    }
+
+    .search-clear {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink-muted);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .search-clear:hover {
+      background: var(--bg-secondary);
+      color: var(--ink-primary);
+    }
+
+    /* 搜索结果 */
+    .search-results {
+      margin-top: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .search-result-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid rgba(44, 44, 44, 0.04);
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .search-result-item:hover {
+      background: var(--bg-primary);
+    }
+
+    .search-result-date {
+      flex-shrink: 0;
+      width: 60px;
+      text-align: center;
+      padding: 6px 8px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      font-size: 12px;
+      color: var(--ink-secondary);
+    }
+
+    .search-result-date .day {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink-primary);
+      line-height: 1.2;
+    }
+
+    .search-result-date .month {
+      font-size: 11px;
+    }
+
+    .search-result-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .search-result-text {
+      font-size: 14px;
+      color: var(--ink-primary);
+      line-height: 1.5;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .search-result-text.completed {
+      color: var(--ink-muted);
+      text-decoration: line-through;
+    }
+
+    .search-result-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .search-result-time {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      color: var(--accent-bamboo);
+    }
+
+    .search-result-note {
+      font-size: 12px;
+      color: var(--ink-secondary);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .search-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--ink-muted);
+    }
+
+    .search-empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .search-highlight {
+      background: rgba(200, 75, 49, 0.15);
+      color: var(--accent-vermilion);
+      padding: 0 2px;
+      border-radius: 2px;
     }
 
     .date-display {
@@ -2060,6 +2267,45 @@
         font-size: 14px;
       }
 
+      /* 搜索面板移动端适配 */
+      .content-header {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .search-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+
+      .search-panel {
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .search-input-wrapper {
+        padding: 10px 12px;
+      }
+
+      .search-result-item {
+        padding: 12px;
+      }
+
+      .search-result-date {
+        width: 50px;
+        padding: 4px 6px;
+      }
+
+      .search-result-date .day {
+        font-size: 16px;
+      }
+
       .weekday-header {
         padding: 4px 0;
         font-size: 10px;
@@ -2269,6 +2515,21 @@
             <span id="statsText" class="stats">0/0 已完成</span>
           </div>
         </div>
+        <div class="header-actions">
+          <button class="search-btn" onclick="toggleSearchPanel()" title="搜索">
+            <span>🔍</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 搜索面板 -->
+      <div id="searchPanel" class="search-panel hidden">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" class="search-input" placeholder="搜索所有待办事项..." autocomplete="off">
+          <button class="search-clear" onclick="clearSearch()" title="清空">×</button>
+        </div>
+        <div id="searchResults" class="search-results"></div>
       </header>
 
       <div class="week-view" id="weekView">
@@ -2475,6 +2736,11 @@
     const simpleImageInput = document.getElementById('simpleImageInput')
     const simpleImagePreview = document.getElementById('simpleImagePreview')
     const simpleImageCount = document.getElementById('simpleImageCount')
+
+    // 搜索相关
+    const searchPanel = document.getElementById('searchPanel')
+    const searchInput = document.getElementById('searchInput')
+    const searchResults = document.getElementById('searchResults')
 
     // 简洁模式临时图片数组
     let simpleTempImages = []
@@ -3364,6 +3630,155 @@
       handleImagePaste(event, tempImages, renderImagePreviews)
     }
 
+    // ========== 搜索功能 ==========
+
+    function toggleSearchPanel() {
+      const isHidden = searchPanel.classList.contains('hidden')
+      if (isHidden) {
+        searchPanel.classList.remove('hidden')
+        searchInput.focus()
+        // 如果有输入，执行搜索
+        if (searchInput.value.trim()) {
+          performSearch(searchInput.value.trim())
+        }
+      } else {
+        searchPanel.classList.add('hidden')
+        searchInput.value = ''
+        searchResults.innerHTML = ''
+      }
+    }
+
+    function clearSearch() {
+      searchInput.value = ''
+      searchResults.innerHTML = ''
+      searchInput.focus()
+    }
+
+    function performSearch(keyword) {
+      if (!keyword) {
+        searchResults.innerHTML = ''
+        return
+      }
+
+      const results = []
+      const lowerKeyword = keyword.toLowerCase()
+
+      // 遍历所有日期的待办
+      for (const [date, dateTodos] of Object.entries(todos)) {
+        if (!Array.isArray(dateTodos)) continue
+
+        for (const todo of dateTodos) {
+          if (todo.deleted) continue
+
+          // 搜索标题、备注
+          const textMatch = todo.text.toLowerCase().includes(lowerKeyword)
+          const noteMatch = todo.note && todo.note.toLowerCase().includes(lowerKeyword)
+
+          if (textMatch || noteMatch) {
+            results.push({
+              ...todo,
+              date: date
+            })
+          }
+        }
+      }
+
+      // 按日期排序（最新的在前）
+      results.sort((a, b) => new Date(b.date) - new Date(a.date))
+
+      renderSearchResults(results, keyword)
+    }
+
+    function renderSearchResults(results, keyword) {
+      if (results.length === 0) {
+        searchResults.innerHTML = `
+          <div class="search-empty">
+            <div class="search-empty-icon">🔍</div>
+            <div>未找到包含 "${escapeHtml(keyword)}" 的事项</div>
+          </div>
+        `
+        return
+      }
+
+      searchResults.innerHTML = results.map(todo => {
+        const date = new Date(todo.date)
+        const day = date.getDate()
+        const month = date.getMonth() + 1
+        const isCompleted = todo.completed
+        const timeRange = formatTimeRange(todo.startTime, todo.endTime)
+
+        // 高亮匹配的关键词
+        const highlightedText = highlightText(todo.text, keyword)
+        const highlightedNote = todo.note ? highlightText(todo.note, keyword) : ''
+
+        return `
+          <div class="search-result-item" onclick="goToSearchResult('${todo.date}', ${todo.id})">
+            <div class="search-result-date">
+              <div class="day">${day}</div>
+              <div class="month">${month}月</div>
+            </div>
+            <div class="search-result-content">
+              <div class="search-result-text ${isCompleted ? 'completed' : ''}">${highlightedText}</div>
+              ${timeRange ? `<div class="search-result-meta"><span class="search-result-time">◷ ${timeRange}</span></div>` : ''}
+              ${highlightedNote ? `<div class="search-result-note">${highlightedNote}</div>` : ''}
+            </div>
+          </div>
+        `
+      }).join('')
+    }
+
+    function highlightText(text, keyword) {
+      if (!keyword) return escapeHtml(text)
+      const lowerText = text.toLowerCase()
+      const lowerKeyword = keyword.toLowerCase()
+      let result = ''
+      let lastIndex = 0
+
+      while (true) {
+        const index = lowerText.indexOf(lowerKeyword, lastIndex)
+        if (index === -1) break
+
+        result += escapeHtml(text.slice(lastIndex, index))
+        result += `<span class="search-highlight">${escapeHtml(text.slice(index, index + keyword.length))}</span>`
+        lastIndex = index + keyword.length
+      }
+
+      result += escapeHtml(text.slice(lastIndex))
+      return result
+    }
+
+    function goToSearchResult(date, todoId) {
+      // 隐藏搜索面板
+      searchPanel.classList.add('hidden')
+      searchInput.value = ''
+      searchResults.innerHTML = ''
+
+      // 跳转到对应日期
+      selectDate(date)
+
+      // 滚动到对应待办项
+      setTimeout(() => {
+        const todoElement = document.querySelector(`.todo-item[data-id="${todoId}"]`)
+        if (todoElement) {
+          todoElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          todoElement.style.animation = 'highlight-pulse 1s ease'
+          setTimeout(() => {
+            todoElement.style.animation = ''
+          }, 1000)
+        }
+      }, 100)
+    }
+
+    // 添加高亮动画
+    const searchHighlightStyle = document.createElement('style')
+    searchHighlightStyle.textContent = `
+      @keyframes highlight-pulse {
+        0%, 100% { background: transparent; }
+        50% { background: rgba(200, 75, 49, 0.1); }
+      }
+    `
+    document.head.appendChild(searchHighlightStyle)
+
     function addTodo() {
       const text = todoInput.value.trim()
       const note = todoNoteInput.value.trim()
@@ -3537,6 +3952,19 @@
       viewerImage.src = ''
     }
 
+    // 通用的防抖函数
+    function debounce(func, wait) {
+      let timeout
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout)
+          func(...args)
+        }
+        clearTimeout(timeout)
+        timeout = setTimeout(later, wait)
+      }
+    }
+
     function debouncedSync() {
       if (syncTimeout) {
         clearTimeout(syncTimeout)
@@ -3590,7 +4018,7 @@
         }
 
         return `
-        <div class="todo-item ${todo.completed ? 'completed' : ''}">
+        <div class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
           <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" onclick="toggleTodo(${todo.id})"></div>
           <div class="todo-content" onclick="editTodo(${todo.id})">
             <div class="todo-text">${escapeHtml(todo.text)}</div>
@@ -3806,6 +4234,26 @@
       logoutBtn.addEventListener('click', showLoginModal)
       closeLoginModal.addEventListener('click', hideLoginModal)
       localModeBtn.addEventListener('click', switchToLocalMode)
+
+      // 搜索事件
+      searchInput.addEventListener('input', debounce((e) => {
+        performSearch(e.target.value.trim())
+      }, 300))
+
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          performSearch(searchInput.value.trim())
+        }
+      })
+
+      // ESC 关闭搜索面板
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !searchPanel.classList.contains('hidden')) {
+          searchPanel.classList.add('hidden')
+          searchInput.value = ''
+          searchResults.innerHTML = ''
+        }
+      })
 
       // 图片上传事件
       imageInput.addEventListener('change', handleImageUpload)
