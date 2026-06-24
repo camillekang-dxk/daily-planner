@@ -906,6 +906,95 @@
       border-radius: var(--radius);
     }
 
+    /* 简洁模式图片上传 */
+    .simple-image-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .simple-image-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .simple-image-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      border: 1px solid rgba(44, 44, 44, 0.12);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 252, 248, 0.7);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .simple-image-btn:hover {
+      border-color: var(--accent-bamboo);
+      background: rgba(74, 124, 111, 0.08);
+      color: var(--accent-bamboo);
+    }
+
+    .simple-image-count {
+      font-size: 11px;
+      color: var(--accent-vermilion);
+      font-weight: 500;
+      min-width: 16px;
+      text-align: center;
+    }
+
+    .simple-image-count:empty {
+      display: none;
+    }
+
+    .simple-image-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .simple-thumb-item {
+      position: relative;
+      width: 50px;
+      height: 50px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid rgba(44, 44, 44, 0.08);
+    }
+
+    .simple-thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .simple-thumb-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 16px;
+      height: 16px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(44, 44, 44, 0.6);
+      color: white;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+    }
+
+    .simple-thumb-remove:hover {
+      background: var(--accent-vermilion);
+    }
+
     /* 智能输入模式 */
     .input-tabs {
       display: flex;
@@ -2199,6 +2288,17 @@
             <button id="addBtn" class="add-btn">添加</button>
           </div>
           <textarea id="todoNoteInput" class="todo-note-input" placeholder="备注（可多行，不会显示在周列表中）" rows="3"></textarea>
+          <!-- 图片上传区域 -->
+          <div class="simple-image-upload">
+            <div class="simple-image-area" id="simpleImageArea">
+              <input type="file" id="simpleImageInput" class="image-input" accept="image/*" multiple>
+              <button class="simple-image-btn" onclick="document.getElementById('simpleImageInput').click()" title="添加图片">
+                <span>📷</span>
+                <span class="simple-image-count" id="simpleImageCount"></span>
+              </button>
+            </div>
+            <div id="simpleImagePreview" class="simple-image-preview"></div>
+          </div>
         </div>
 
         <!-- 智能模式 -->
@@ -2370,6 +2470,14 @@
     const imagePreviewContainer = document.getElementById('imagePreviewContainer')
     const imageViewerModal = document.getElementById('imageViewerModal')
     const viewerImage = document.getElementById('viewerImage')
+
+    // 简洁模式图片上传相关
+    const simpleImageInput = document.getElementById('simpleImageInput')
+    const simpleImagePreview = document.getElementById('simpleImagePreview')
+    const simpleImageCount = document.getElementById('simpleImageCount')
+
+    // 简洁模式临时图片数组
+    let simpleTempImages = []
 
     // ========== 工具函数 ==========
     function formatDate(date) {
@@ -3147,6 +3255,66 @@
     }
 
     // ========== 待办功能 ==========
+
+    // 简洁模式图片处理函数
+    async function handleSimpleImageUpload(event) {
+      const files = Array.from(event.target.files)
+      if (files.length === 0) return
+
+      // 限制最多3张图片
+      const remainingSlots = 3 - simpleTempImages.length
+      if (remainingSlots <= 0) {
+        alert('最多只能上传3张图片')
+        return
+      }
+
+      const filesToProcess = files.slice(0, remainingSlots)
+
+      for (const file of filesToProcess) {
+        if (!file.type.startsWith('image/')) continue
+
+        try {
+          const compressedDataUrl = await compressImage(file)
+          simpleTempImages.push(compressedDataUrl)
+        } catch (error) {
+          console.error('图片处理失败:', error)
+        }
+      }
+
+      renderSimpleImagePreviews()
+
+      // 清空input，允许重复选择相同文件
+      event.target.value = ''
+    }
+
+    function renderSimpleImagePreviews() {
+      if (simpleTempImages.length === 0) {
+        simpleImagePreview.innerHTML = ''
+        simpleImageCount.textContent = ''
+        return
+      }
+
+      simpleImageCount.textContent = simpleTempImages.length
+      simpleImagePreview.innerHTML = simpleTempImages.map((img, index) => `
+        <div class="simple-thumb-item">
+          <img src="${img}" alt="预览${index + 1}">
+          <button class="simple-thumb-remove" onclick="removeSimpleImage(${index})" title="删除">×</button>
+        </div>
+      `).join('')
+    }
+
+    function removeSimpleImage(index) {
+      simpleTempImages.splice(index, 1)
+      renderSimpleImagePreviews()
+    }
+
+    // 清空简洁模式的图片
+    function clearSimpleImages() {
+      simpleTempImages = []
+      simpleImagePreview.innerHTML = ''
+      simpleImageCount.textContent = ''
+    }
+
     function addTodo() {
       const text = todoInput.value.trim()
       const note = todoNoteInput.value.trim()
@@ -3165,6 +3333,11 @@
         updatedAt: new Date().toISOString()
       }
 
+      // 如果有图片，添加到待办
+      if (simpleTempImages.length > 0) {
+        newTodo.images = [...simpleTempImages]
+      }
+
       todos[selectedDate].push(newTodo)
       saveLocalTodos()
 
@@ -3174,6 +3347,7 @@
 
       todoInput.value = ''
       todoNoteInput.value = ''
+      clearSimpleImages()
       renderTodos()
       renderCalendar()
       renderWeekView()
@@ -3575,6 +3749,9 @@
 
       // 图片上传事件
       imageInput.addEventListener('change', handleImageUpload)
+
+      // 简洁模式图片上传事件
+      simpleImageInput.addEventListener('change', handleSimpleImageUpload)
     }
 
     // 启动
