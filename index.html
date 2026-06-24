@@ -781,6 +781,17 @@
       text-decoration: line-through;
     }
 
+    .week-time-label {
+      display: inline-block;
+      font-size: 10px;
+      color: var(--accent-bamboo);
+      background: rgba(74, 124, 111, 0.12);
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-right: 4px;
+      font-weight: 500;
+    }
+
     .week-todo-more {
       font-size: 11px;
       color: var(--ink-muted);
@@ -893,6 +904,309 @@
     .add-btn:hover {
       background: rgba(200, 75, 49, 0.08);
       border-radius: var(--radius);
+    }
+
+    /* 智能输入模式 */
+    .input-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .input-tab {
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 400;
+      border: none;
+      background: transparent;
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+      border-radius: var(--radius);
+      position: relative;
+    }
+
+    .input-tab:hover {
+      color: var(--ink-secondary);
+      background: var(--bg-secondary);
+    }
+
+    .input-tab.active {
+      color: var(--accent-vermilion);
+      background: rgba(200, 75, 49, 0.08);
+    }
+
+    .input-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 2px;
+      background: var(--accent-vermilion);
+      border-radius: 1px;
+    }
+
+    .smart-input-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-bottom: 2px solid var(--bg-secondary);
+      padding-bottom: 12px;
+      transition: border-color 0.3s ease;
+    }
+
+    .smart-input-wrapper:focus-within {
+      border-bottom-color: var(--accent-bamboo);
+    }
+
+    .smart-input-hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ink-muted);
+      padding: 8px 12px;
+      background: rgba(74, 124, 111, 0.08);
+      border-radius: var(--radius-lg);
+      margin-bottom: 4px;
+    }
+
+    .smart-hint-icon {
+      font-size: 14px;
+    }
+
+    .smart-textarea {
+      width: 100%;
+      min-height: 100px;
+      resize: vertical;
+      padding: 14px 16px;
+      font-size: 15px;
+      line-height: 1.6;
+      border: 1px solid rgba(44, 44, 44, 0.08);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 252, 248, 0.7);
+      color: var(--ink-primary);
+      outline: none;
+      font-family: var(--font-sans);
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .smart-textarea:focus {
+      border-color: rgba(74, 124, 111, 0.4);
+      background: var(--bg-paper);
+    }
+
+    .smart-textarea::placeholder {
+      color: var(--ink-muted);
+      font-weight: 300;
+    }
+
+    .smart-add-btn {
+      align-self: flex-end;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      background: var(--accent-bamboo);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+      border-radius: var(--radius-lg);
+      letter-spacing: 0.02em;
+    }
+
+    .smart-add-btn:hover {
+      background: #3d6a5f;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(74, 124, 111, 0.3);
+    }
+
+    .smart-add-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 智能识别预览模态框 */
+    .smart-preview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(247, 245, 240, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(20px);
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .smart-preview-modal.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .smart-preview-content {
+      width: 90%;
+      max-width: 420px;
+      background: var(--bg-paper);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-elevated);
+      padding: 28px;
+    }
+
+    .smart-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .smart-preview-header h3 {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ink-primary);
+    }
+
+    .smart-preview-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--ink-muted);
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .smart-preview-close:hover {
+      background: var(--bg-secondary);
+      color: var(--ink-primary);
+    }
+
+    .smart-preview-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .preview-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .preview-label {
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-weight: 400;
+    }
+
+    .preview-value {
+      font-size: 15px;
+      color: var(--ink-primary);
+      font-weight: 500;
+      padding: 10px 14px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    .preview-value.preview-note {
+      min-height: 60px;
+      align-items: flex-start;
+      white-space: pre-wrap;
+    }
+
+    .preview-value:empty::before {
+      content: '未识别';
+      color: var(--ink-muted);
+      font-weight: 300;
+      font-style: italic;
+    }
+
+    .smart-preview-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .smart-preview-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+      border-radius: var(--radius-lg);
+    }
+
+    .smart-preview-btn.secondary {
+      background: var(--bg-secondary);
+      color: var(--ink-secondary);
+    }
+
+    .smart-preview-btn.secondary:hover {
+      background: #e0dcd4;
+    }
+
+    .smart-preview-btn.primary {
+      background: var(--accent-bamboo);
+      color: white;
+    }
+
+    .smart-preview-btn.primary:hover {
+      background: #3d6a5f;
+    }
+
+    /* 时间标签 */
+    .todo-time-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--accent-bamboo);
+      background: rgba(74, 124, 111, 0.1);
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .todo-time-tag .time-icon {
+      font-size: 11px;
+    }
+
+    .todo-time-tag.single-time {
+      color: var(--ink-muted);
+      background: rgba(44, 44, 44, 0.06);
+    }
+
+    /* 响应式 */
+    @media (max-width: 480px) {
+      .smart-preview-content {
+        width: 95%;
+        padding: 20px;
+      }
+
+      .smart-preview-actions {
+        flex-direction: column;
+      }
+
+      .smart-preview-btn {
+        width: 100%;
+      }
     }
 
     /* 待办列表 */
@@ -1527,12 +1841,66 @@
       </div>
 
       <div class="input-section">
-        <div class="todo-input-wrapper">
+        <div class="input-tabs">
+          <button class="input-tab active" data-mode="simple" onclick="switchInputMode('simple')">简洁模式</button>
+          <button class="input-tab" data-mode="smart" onclick="switchInputMode('smart')">智能模式</button>
+        </div>
+
+        <!-- 简洁模式 -->
+        <div id="simpleInputPanel" class="todo-input-wrapper">
           <div class="todo-input-row">
             <input type="text" id="todoInput" class="todo-input" placeholder="添加新的待办事项..." autocomplete="off">
             <button id="addBtn" class="add-btn">添加</button>
           </div>
           <textarea id="todoNoteInput" class="todo-note-input" placeholder="备注（可多行，不会显示在周列表中）" rows="3"></textarea>
+        </div>
+
+        <!-- 智能模式 -->
+        <div id="smartInputPanel" class="smart-input-wrapper hidden">
+          <div class="smart-input-hint">
+            <span class="smart-hint-icon">💡</span>
+            <span>自然输入时间、事项，自动识别保存</span>
+          </div>
+          <textarea id="smartInput" class="smart-textarea" placeholder="例如：&#10;明天下午3点到5点开会&#10;下周三上午十点预约体检&#10;6月25日晚上7点开始瑜伽课" rows="5"></textarea>
+          <button id="smartAddBtn" class="smart-add-btn">
+            <span class="smart-btn-text">智能识别</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 智能识别预览模态框 -->
+      <div id="smartPreviewModal" class="smart-preview-modal hidden">
+        <div class="smart-preview-content">
+          <div class="smart-preview-header">
+            <h3>识别结果预览</h3>
+            <button class="smart-preview-close" onclick="closeSmartPreview()">×</button>
+          </div>
+          <div class="smart-preview-body">
+            <div class="preview-item">
+              <span class="preview-label">事项内容</span>
+              <div id="previewText" class="preview-value"></div>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">日期</span>
+              <div id="previewDate" class="preview-value"></div>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">开始时间</span>
+              <div id="previewStartTime" class="preview-value"></div>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">结束时间</span>
+              <div id="previewEndTime" class="preview-value"></div>
+            </div>
+            <div id="previewNotePanel" class="preview-item hidden">
+              <span class="preview-label">备注</span>
+              <div id="previewNote" class="preview-value preview-note"></div>
+            </div>
+          </div>
+          <div class="smart-preview-actions">
+            <button class="smart-preview-btn secondary" onclick="closeSmartPreview()">取消</button>
+            <button class="smart-preview-btn primary" onclick="confirmSmartAdd()">确认添加</button>
+          </div>
         </div>
       </div>
 
@@ -1589,6 +1957,19 @@
     const accountSection = document.getElementById('accountSection')
     const accountsContainer = document.getElementById('accountsContainer')
     const localModeBtn = document.getElementById('localModeBtn')
+
+    // 智能输入相关
+    const simpleInputPanel = document.getElementById('simpleInputPanel')
+    const smartInputPanel = document.getElementById('smartInputPanel')
+    const smartInput = document.getElementById('smartInput')
+    const smartAddBtn = document.getElementById('smartAddBtn')
+    const smartPreviewModal = document.getElementById('smartPreviewModal')
+    const previewText = document.getElementById('previewText')
+    const previewDate = document.getElementById('previewDate')
+    const previewStartTime = document.getElementById('previewStartTime')
+    const previewEndTime = document.getElementById('previewEndTime')
+    const previewNotePanel = document.getElementById('previewNotePanel')
+    const previewNote = document.getElementById('previewNote')
 
     // ========== 工具函数 ==========
     function formatDate(date) {
@@ -1912,6 +2293,366 @@
       hideLoginModal()
     }
 
+    // ========== 智能时间解析功能 ==========
+
+    // 当前识别的结果（用于预览确认）
+    let currentParsedResult = null
+
+    /**
+     * 智能时间解析引擎
+     * 解析自然语言中的日期、时间信息
+     */
+    function parseSmartInput(input) {
+      const result = {
+        text: '',
+        note: '',
+        date: null,  // 相对日期偏移或绝对日期
+        startTime: null,  // 开始时间 HH:MM
+        endTime: null,    // 结束时间 HH:MM
+        originalDate: selectedDate // 默认使用当前选中的日期
+      }
+
+      if (!input || !input.trim()) return result
+
+      let text = input.trim()
+
+      // 1. 提取日期信息
+      const datePatterns = [
+        // 明天
+        { regex: /明天|明日/g, handler: () => getRelativeDate(1) },
+        // 后天
+        { regex: /后天|後天/g, handler: () => getRelativeDate(2) },
+        // 大后天
+        { regex: /大后天|大後天/g, handler: () => getRelativeDate(3) },
+        // 昨天
+        { regex: /昨天|昨日/g, handler: () => getRelativeDate(-1) },
+        // 今天
+        { regex: /今天/g, handler: () => getRelativeDate(0) },
+        // 下周X
+        { regex: /下[周|週|星期]([一二三四五六日天])/g, handler: (match, weekday) => getNextWeekday(weekday) },
+        // 本周X / 这周一/二/三...
+        { regex: /(?:本|这)[周|週|星期]([一二三四五六日天])/g, handler: (match, weekday) => getThisWeekday(weekday) },
+        // MM月DD日 / M月D日
+        { regex: /(\d{1,2})[月/](\d{1,2})[日号]?/g, handler: (match, m, d) => {
+          const now = new Date()
+          const year = now.getFullYear()
+          const month = parseInt(m) - 1
+          const day = parseInt(d)
+          const date = new Date(year, month, day)
+          return formatDate(date)
+        }},
+        // MM-DD / MM.DD
+        { regex: /(\d{1,2})[-\.](\d{1,2})/g, handler: (match, m, d) => {
+          const now = new Date()
+          const year = now.getFullYear()
+          const month = parseInt(m) - 1
+          const day = parseInt(d)
+          const date = new Date(year, month, day)
+          return formatDate(date)
+        }},
+        // YYYY年MM月DD日
+        { regex: /(\d{4})[年/](\d{1,2})[月/](\d{1,2})[日号]?/g, handler: (match, y, m, d) => {
+          const date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d))
+          return formatDate(date)
+        }}
+      ]
+
+      // 尝试匹配日期
+      for (const pattern of datePatterns) {
+        const matches = [...text.matchAll(pattern.regex)]
+        if (matches.length > 0) {
+          const lastMatch = matches[matches.length - 1]
+          const parsedDate = pattern.handler(lastMatch[0], lastMatch[1], lastMatch[2], lastMatch[3])
+          if (parsedDate) {
+            result.date = parsedDate
+            // 从文本中移除日期部分（但保留用于显示）
+            text = text.replace(lastMatch[0], '')
+            break
+          }
+        }
+      }
+
+      // 2. 提取时间范围
+      // 开始和结束时间模式：X点到Y点、X点-Y点、X:XX-Y:XX等
+      const timeRangePatterns = [
+        // X点到Y点 / X点钟到Y点钟
+        { regex: /(\d{1,2})[点:时](?:钟?)[\s]*(?:到|至|-|~)[\s]*(\d{1,2})[点:时](?:钟?)/g, type: 'range' },
+        // X:XX到Y:YY / X:XX-Y:XX
+        { regex: /(\d{1,2}):(\d{2})[\s]*(?:到|至|-|~)[\s]*(\d{1,2}):(\d{2})/g, type: 'range' },
+        // 上午X点到下午Y点
+        { regex: /(?:上午|早上|早晨)(\d{1,2})[点:时][\s]*(?:到|至|-|~)[\s]*(?:下午|晚上|傍晚)(\d{1,2})[点:时]/g, type: 'ampm_range', ampm: true },
+        // 从X点开始 / X点开始
+        { regex: /(?:从)?[\s]*(\d{1,2})[点:时](?:钟?)(?:开始|起)/g, type: 'start' },
+        // 到X点结束 / 至X点
+        { regex: /(?:到|至|直到)[\s]*(\d{1,2})[点:时](?:钟?)(?:结束|为止|止)?/g, type: 'end' },
+        // 持续X小时
+        { regex: /持续(\d+)[\s]*个?[小时半]/g, type: 'duration' },
+        // 单独时间点：下午X点 / 晚上X点
+        { regex: /(?:下午|晚上|傍晚|晚间)(\d{1,2})[点:时](?:钟?)/g, type: 'single', offset: 12 },
+        { regex: /(?:上午|早上|早晨|晨间)(\d{1,2})[点:时](?:钟?)/g, type: 'single', offset: 0 },
+        // X点 / X点钟
+        { regex: /(\d{1,2})[点:时](?:钟?)/g, type: 'single', offset: 0 },
+        // X:XX
+        { regex: /(\d{1,2}):(\d{2})/g, type: 'single_detail' }
+      ]
+
+      let startHour = null, startMinute = 0
+      let endHour = null, endMinute = 0
+
+      for (const pattern of timeRangePatterns) {
+        const matches = [...text.matchAll(pattern.regex)]
+        for (const match of matches) {
+          if (pattern.type === 'range') {
+            // 范围模式 X点到Y点 或 X:XX-Y:XX
+            if (match[0].includes(':')) {
+              startHour = parseInt(match[1])
+              startMinute = parseInt(match[2])
+              endHour = parseInt(match[3])
+              endMinute = parseInt(match[4])
+            } else {
+              startHour = parseInt(match[1])
+              endHour = parseInt(match[2])
+            }
+            text = text.replace(match[0], '')
+          } else if (pattern.type === 'ampm_range') {
+            startHour = parseInt(match[1])
+            endHour = parseInt(match[2]) + 12
+            text = text.replace(match[0], '')
+          } else if (pattern.type === 'start') {
+            startHour = parseInt(match[1])
+            text = text.replace(match[0], '')
+          } else if (pattern.type === 'end') {
+            endHour = parseInt(match[1])
+            text = text.replace(match[0], '')
+          } else if (pattern.type === 'single') {
+            // 单个时间，根据上下文判断是开始还是结束
+            const hour = parseInt(match[1]) + (pattern.offset || 0)
+            if (startHour === null) {
+              startHour = hour
+            } else {
+              endHour = hour
+            }
+            text = text.replace(match[0], '')
+          } else if (pattern.type === 'single_detail') {
+            const hour = parseInt(match[1])
+            const minute = parseInt(match[2])
+            if (startHour === null) {
+              startHour = hour
+              startMinute = minute
+            } else {
+              endHour = hour
+              endMinute = minute
+            }
+            text = text.replace(match[0], '')
+          }
+        }
+      }
+
+      // 处理持续时长
+      if (startHour !== null && endHour === null) {
+        const durationMatch = input.match(/持续(\d+)(?:\.5|个半)?[\s]*个?[小时半]/)
+        if (durationMatch) {
+          let duration = parseFloat(durationMatch[1])
+          if (input.includes('半') && !input.includes('个半小时')) {
+            duration += 0.5
+          }
+          endHour = startHour + Math.floor(duration)
+          endMinute = startMinute + (duration % 1) * 60
+          if (endMinute >= 60) {
+            endHour += 1
+            endMinute -= 60
+          }
+        }
+      }
+
+      // 格式化时间
+      if (startHour !== null) {
+        result.startTime = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`
+      }
+      if (endHour !== null) {
+        result.endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
+      }
+
+      // 清理文本，提取事项内容和备注
+      // 用换行分隔事项和备注
+      const lines = text.split(/\n+/).filter(line => line.trim())
+      if (lines.length > 0) {
+        result.text = lines[0].trim()
+        if (lines.length > 1) {
+          result.note = lines.slice(1).join('\n').trim()
+        }
+      }
+
+      // 如果没有提取到文本，使用原始输入
+      if (!result.text) {
+        result.text = input.trim()
+      }
+
+      // 最终使用哪个日期
+      if (result.date) {
+        result.originalDate = result.date
+      }
+
+      return result
+    }
+
+    // 获取相对日期
+    function getRelativeDate(offsetDays) {
+      const date = new Date()
+      date.setDate(date.getDate() + offsetDays)
+      return formatDate(date)
+    }
+
+    // 获取本周的某一天
+    function getThisWeekday(weekday) {
+      const weekdays = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 0, '天': 0 }
+      const targetDay = weekdays[weekday] || 0
+      const today = new Date()
+      const currentDay = today.getDay()
+      const diff = targetDay - currentDay
+      const date = new Date(today)
+      date.setDate(today.getDate() + diff)
+      return formatDate(date)
+    }
+
+    // 获取下周的某一天
+    function getNextWeekday(weekday) {
+      const weekdays = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 0, '天': 0 }
+      const targetDay = weekdays[weekday] || 0
+      const today = new Date()
+      const currentDay = today.getDay()
+      // 计算到下周目标天的天数差
+      const daysUntilNextWeek = 7 - currentDay + targetDay
+      const date = new Date(today)
+      date.setDate(today.getDate() + daysUntilNextWeek)
+      return formatDate(date)
+    }
+
+    // 格式化时间为显示字符串
+    function formatTimeDisplay(timeStr) {
+      if (!timeStr) return null
+      const [hour, minute] = timeStr.split(':').map(Number)
+      const hourStr = hour
+      const minuteStr = minute > 0 ? `:${String(minute).padStart(2, '0')}` : ''
+      return `${hourStr}${minuteStr}`
+    }
+
+    // 格式化时间段显示
+    function formatTimeRange(startTime, endTime) {
+      if (startTime && endTime) {
+        return `${formatTimeDisplay(startTime)} - ${formatTimeDisplay(endTime)}`
+      } else if (startTime) {
+        return `${formatTimeDisplay(startTime)} 开始`
+      } else if (endTime) {
+        return `${formatTimeDisplay(endTime)} 结束`
+      }
+      return null
+    }
+
+    // 切换输入模式
+    function switchInputMode(mode) {
+      const simplePanel = document.getElementById('simpleInputPanel')
+      const smartPanel = document.getElementById('smartInputPanel')
+      const tabs = document.querySelectorAll('.input-tab')
+
+      tabs.forEach(tab => {
+        if (tab.dataset.mode === mode) {
+          tab.classList.add('active')
+        } else {
+          tab.classList.remove('active')
+        }
+      })
+
+      if (mode === 'simple') {
+        simplePanel.classList.remove('hidden')
+        smartPanel.classList.add('hidden')
+      } else {
+        simplePanel.classList.add('hidden')
+        smartPanel.classList.remove('hidden')
+        smartInput.focus()
+      }
+    }
+
+    // 处理智能输入
+    function handleSmartInput() {
+      const input = smartInput.value.trim()
+      if (!input) return
+
+      const parsed = parseSmartInput(input)
+      currentParsedResult = parsed
+
+      // 显示预览
+      showSmartPreview(parsed)
+    }
+
+    // 显示预览模态框
+    function showSmartPreview(parsed) {
+      previewText.textContent = parsed.text || '（未识别）'
+      previewDate.textContent = parsed.date
+        ? `${parsed.date} (${getWeekday(parsed.date)})`
+        : `${selectedDate} (${getWeekday(selectedDate)}) - 当前选中日期`
+      previewStartTime.textContent = parsed.startTime || ''
+      previewEndTime.textContent = parsed.endTime || ''
+
+      if (parsed.note) {
+        previewNotePanel.classList.remove('hidden')
+        previewNote.textContent = parsed.note
+      } else {
+        previewNotePanel.classList.add('hidden')
+        previewNote.textContent = ''
+      }
+
+      smartPreviewModal.classList.remove('hidden')
+    }
+
+    // 关闭预览模态框
+    function closeSmartPreview() {
+      smartPreviewModal.classList.add('hidden')
+      currentParsedResult = null
+    }
+
+    // 确认添加智能识别的待办
+    function confirmSmartAdd() {
+      if (!currentParsedResult) return
+
+      const targetDate = currentParsedResult.date || selectedDate
+
+      if (!todos[targetDate]) {
+        todos[targetDate] = []
+      }
+
+      const newTodo = {
+        id: Date.now(),
+        text: currentParsedResult.text,
+        note: currentParsedResult.note,
+        completed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        startTime: currentParsedResult.startTime,
+        endTime: currentParsedResult.endTime
+      }
+
+      todos[targetDate].push(newTodo)
+      saveLocalTodos()
+
+      if (syncPassword) {
+        debouncedSync()
+      }
+
+      // 如果添加到了其他日期，切换到那个日期
+      if (targetDate !== selectedDate) {
+        selectDate(targetDate)
+      } else {
+        renderTodos()
+        renderCalendar()
+        renderWeekView()
+      }
+
+      // 清空输入
+      smartInput.value = ''
+      closeSmartPreview()
+    }
+
     // ========== 待办功能 ==========
     function addTodo() {
       const text = todoInput.value.trim()
@@ -2036,11 +2777,17 @@
         return a.completed ? 1 : -1
       })
 
-      todoList.innerHTML = sortedTodos.map(todo => `
+      todoList.innerHTML = sortedTodos.map(todo => {
+        const timeRange = formatTimeRange(todo.startTime, todo.endTime)
+        const timeTag = timeRange
+          ? `<div class="todo-time-tag ${todo.endTime ? '' : 'single-time'}"><span class="time-icon">◷</span>${timeRange}</div>`
+          : ''
+        return `
         <div class="todo-item ${todo.completed ? 'completed' : ''}">
           <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" onclick="toggleTodo(${todo.id})"></div>
           <div class="todo-content" onclick="editTodo(${todo.id})">
             <div class="todo-text">${escapeHtml(todo.text)}</div>
+            ${timeTag}
             ${hasNote(todo) ? `<div class="todo-note">${escapeHtml(todo.note)}</div>` : ''}
           </div>
           <div class="todo-actions">
@@ -2048,7 +2795,8 @@
             <button class="todo-action-btn delete" onclick="event.stopPropagation(); deleteTodo(${todo.id})" title="删除">✕</button>
           </div>
         </div>
-      `).join('')
+      `
+      }).join('')
 
       const completed = visibleTodos.filter(t => t.completed).length
       statsText.textContent = `${completed}/${visibleTodos.length} 已完成`
@@ -2159,9 +2907,13 @@
           todoHTML = '<div class="week-day-empty">无待办</div>'
         } else {
           const displayTodos = visibleTodos.slice(0, 3)
-          todoHTML = displayTodos.map(t => `
-            <div class="week-todo-item ${t.completed ? 'completed' : ''}">${escapeHtml(t.text)}</div>
-          `).join('')
+          todoHTML = displayTodos.map(t => {
+            const timeStr = t.startTime ? formatTimeDisplay(t.startTime) : ''
+            const timeLabel = timeStr ? `<span class="week-time-label">${timeStr}</span>` : ''
+            return `
+            <div class="week-todo-item ${t.completed ? 'completed' : ''}">${timeLabel}${escapeHtml(t.text)}</div>
+          `
+          }).join('')
           if (visibleTodos.length > 3) {
             todoHTML += `<div class="week-todo-more">+${visibleTodos.length - 3} 更多</div>`
           }
@@ -2211,6 +2963,15 @@
       addBtn.addEventListener('click', addTodo)
       todoInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addTodo()
+      })
+
+      // 智能输入事件
+      smartAddBtn.addEventListener('click', handleSmartInput)
+      smartInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.metaKey) {
+          // Cmd/Ctrl + Enter 触发识别
+          handleSmartInput()
+        }
       })
 
       prevMonth.addEventListener('click', () => {
