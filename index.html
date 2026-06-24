@@ -3315,6 +3315,55 @@
       simpleImageCount.textContent = ''
     }
 
+    // 处理图片粘贴（通用函数）
+    async function handleImagePaste(event, targetImages, renderCallback) {
+      const items = event.clipboardData?.items
+      if (!items) return
+
+      const imageItems = []
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const blob = item.getAsFile()
+          if (blob) {
+            imageItems.push(blob)
+          }
+        }
+      }
+
+      if (imageItems.length === 0) return
+
+      // 检查剩余槽位
+      const remainingSlots = 3 - targetImages.length
+      if (remainingSlots <= 0) {
+        alert('最多只能上传3张图片')
+        return
+      }
+
+      const filesToProcess = imageItems.slice(0, remainingSlots)
+
+      for (const blob of filesToProcess) {
+        try {
+          const file = new File([blob], `pasted-image-${Date.now()}.png`, { type: blob.type })
+          const compressedDataUrl = await compressImage(file)
+          targetImages.push(compressedDataUrl)
+        } catch (error) {
+          console.error('粘贴图片处理失败:', error)
+        }
+      }
+
+      renderCallback()
+    }
+
+    // 简洁模式粘贴处理
+    function handleSimplePaste(event) {
+      handleImagePaste(event, simpleTempImages, renderSimpleImagePreviews)
+    }
+
+    // 编辑模式粘贴处理
+    function handleEditPaste(event) {
+      handleImagePaste(event, tempImages, renderImagePreviews)
+    }
+
     function addTodo() {
       const text = todoInput.value.trim()
       const note = todoNoteInput.value.trim()
@@ -3410,10 +3459,21 @@
 
       // 显示模态框
       todoEditModal.classList.remove('hidden')
+
+      // 添加粘贴事件监听
+      editTodoText.addEventListener('paste', handleEditPaste)
+      editTodoNote.addEventListener('paste', handleEditPaste)
+      imagePreviewContainer.addEventListener('paste', handleEditPaste)
     }
 
     function closeTodoEditModal() {
       todoEditModal.classList.add('hidden')
+
+      // 移除粘贴事件监听
+      editTodoText.removeEventListener('paste', handleEditPaste)
+      editTodoNote.removeEventListener('paste', handleEditPaste)
+      imagePreviewContainer.removeEventListener('paste', handleEditPaste)
+
       currentEditingTodoId = null
       editingTodoId = null
       tempImages = []
@@ -3752,6 +3812,11 @@
 
       // 简洁模式图片上传事件
       simpleImageInput.addEventListener('change', handleSimpleImageUpload)
+
+      // 粘贴事件监听
+      todoInput.addEventListener('paste', handleSimplePaste)
+      todoNoteInput.addEventListener('paste', handleSimplePaste)
+      simpleImagePreview.addEventListener('paste', handleSimplePaste)
     }
 
     // 启动
